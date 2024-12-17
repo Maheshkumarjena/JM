@@ -1319,7 +1319,7 @@ export default function page() {
                       </td>
                       <td>{item?.quantity}</td>
                       <td>{item?.mrp}</td>
-                      <td>{item?.disc}</td>
+                      <td>{item.disc.toFixed(2)}</td>
                       <td>{item?.amount}</td>
                     </tr>
                   );
