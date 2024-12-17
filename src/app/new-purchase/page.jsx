@@ -53,7 +53,6 @@ export default function page() {
   const [DiscountStructure, setDiscountStructure] = useState([]);
   const [gotDbValue, setGotDbValue] = useState(false);
   const [BillSeriesRef, setBillSeriesRef] = useState(null);
-  const [calcDisc,setCalcDisc] = useState([]);
   // const [qrResult, setQrResult] = useState("");
   // const [barcodeScannedData, setBarcodeScannedData] = useState(null);
   const [formData, setFormData] = useState({
@@ -560,6 +559,142 @@ export default function page() {
 
   let content = [];
 
+
+  
+  // * create Excel file
+
+  const createSheet = () => {
+    if (excelContent.length === 0) {
+      handleModal(
+        "⚠ Empty",
+        "The file is empty. Add one item before generating excel file.",
+        "Okay"
+      );
+      window.purchase_modal_1.showModal();
+      return;
+    }
+
+    let totalBillAmount = 0;
+    const content = excelContent.map((item) => {
+      totalBillAmount += item?.amount || 0;
+      return { ...item };
+    });
+    content[0].BILL_REF_AMOUNT = Math.round(totalBillAmount);
+
+    const data = [
+      {
+        sheet: "Sheet1",
+        columns: formData?.isIGST
+          ? purchaseBillFormat
+              .filter((col) => col.value !== "cgst" && col.value !== "sgst")
+              .concat({
+                label: "IGST PERCENT",
+                value: "igstPercent",
+                format: "0",
+              })
+          : purchaseBillFormat,
+        content: formData?.isIGST
+          ? content.map((item) => ({
+              ...item,
+              igstPercent: parseInt(item?.sgst + item?.cgst),
+              disc: IGSTnewDiscPercentage(
+                item?.disc,
+                parseInt(item?.sgst + item?.cgst)
+              ),
+              amount: IGSTnewAmount(
+                item?.mrp,
+                item?.disc,
+                parseInt(item?.quantity),
+                parseInt(item?.sgst + item?.cgst)
+              ),
+              purchaseType: "IGST",
+            }))
+          : content,
+      },
+    ];
+
+    const barcodeCustomItemName = (item) => {
+      const { itemName, partNo } = item;
+
+      if (partNo) {
+        return partNo?.split("-")?.[0] || partNo;
+      }
+
+      if (itemName) {
+        return itemName?.split("-")?.[0] || itemName;
+      }
+
+      return "ERROR!";
+    };
+
+    const barcodeContent = content.flatMap((item) => {
+      // generate itemName
+
+      const date = new Date(item?.originDate);
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear().toString().slice(-2);
+      const roundedDisc = Math.round(item?.disc);
+      const discCode = `${roundedDisc}${day}${month}${year}`;
+      const itemName = barcodeCustomItemName(item);
+
+      return Array(item.repetition).fill({
+        itemName,
+        discCode,
+        location: item?.itemLocation || "N/A",
+        coupon: "",
+      });
+    });
+
+    const barcodeData = [
+      {
+        sheet: "Sheet1",
+        columns: purchaseBarcodeFormat,
+        content: barcodeContent,
+      },
+    ];
+
+    DownloadExcel(
+      content[0]?.partyName,
+      content[0]?.invoiceNo,
+      data,
+      barcodeData
+    );
+    DownloadBarcodeExcel(content[0]?.invoiceNo, barcodeData);
+  };
+
+
+  const DownloadExcel = (fileName, invoice, data, barcodeData) => {
+    const settings = {
+      fileName: `${fileName}-${invoice?.split("-")[1] || invoice}`,
+      extraLength: 3,
+      writeMode: "writeFile",
+      writeOptions: {},
+      RTL: false,
+    };
+    let callback = function () {
+      // * send the document to purchase history
+      sendPurchaseHistory(fileName, invoice, data, barcodeData);
+      // * clear the localStorage
+      clearLocalStorage("PURCHASE_NOT_DOWNLOAD_DATA");
+    };
+    xlsx(data, settings, callback);
+  };
+
+  const DownloadBarcodeExcel = (invoice, data) => {
+    const settings = {
+      fileName: `BARCODE-${invoice?.split("-")?.[1] || invoice}`,
+      extraLength: 3,
+      writeMode: "writeFile",
+      writeOptions: {},
+      RTL: false,
+    };
+    let callback = function () {};
+    xlsx(data, settings, callback);
+  };
+
+
+
   excelContent.forEach((d) => {
     content.push(d);
   });
@@ -636,7 +771,7 @@ export default function page() {
   const sendPurchaseHistory = async (
     partyname,
     invoice,
-    sheet,
+    sheet, 
     barcodeSheet
   ) => {
     try {
@@ -801,101 +936,6 @@ export default function page() {
     setModalMessage((values) => ({ ...values, [name]: value }));
   };
 
-  const downloadSheet = () => {
-    if (excelContent.length === 0) {
-      handleModalMessage({
-        name: "message",
-        value: `⚠ Add one document before exporting excel`,
-      });
-      window.purchase_Modal_1.showModal();
-      return;
-    }
-
-    if (formData?.partyName === "PHONE PE") {
-      if (!formData?.cashPayment && !formData?.bankPayment) {
-        handleModalMessage({
-          name: "message",
-          value: `⚠ Add the payment amount before exporting excel`,
-        });
-        window.purchase_Modal_1.showModal();
-        return;
-      }
-
-      if (formData?.partyName === "Cash" && formData?.bankPayment > 0) {
-        // Change the partyname to PHONE PE
-        handleFormChange("partyName", "PHONE PE");
-        excelContent.forEach((item) => {
-          item.partyName = "PHONE PE";
-        });
-      }
-    }
-
-    if (formData?.saleType === "IGST")
-      data[0].columns.push({
-        label: "igst percent",
-        value: "igstPercent",
-        format: "0",
-      });
-    else
-      data[0].columns.push(
-        {
-          label: "CGST",
-          value: "cgst",
-          format: "0",
-        },
-        {
-          label: "SGST",
-          value: "sgst",
-          format: "0",
-        }
-      );
-
-    // data[0].columns.push(
-    //   {
-    //     label: "BILLED_PARTY_MOBILE_NO",
-    //     value: "mobileNo",
-    //     format: "0",
-    //   },
-    //   {
-    //     label: "BILLED_PARTY_NAME",
-    //     value: "narration",
-    //   },
-    //   {
-    //     label: "SETTLEMENT_AMT1",
-    //     value: "settlement_amount_1_cashPayment",
-    //   },
-    //   {
-    //     label: "SETTLEMENT_AMT2",
-    //     value: "settlement_amount_2_bankPayment",
-    //   },
-    //   {
-    //     label: "SETTLEMENT_NARR2",
-    //     value: "SETTLEMENT_NARR2",
-    //   },
-    //   {
-    //     label: "VEHICLE_NO",
-    //     value: "narration",
-    //   },
-    //   {
-    //     label: "BILL_REF_NO",
-    //     value: "BILL_REF_NO",
-    //   },
-    //   {
-    //     label: "BILL_REF_AMOUNT",
-    //     value: "BILL_REF_AMOUNT",
-    //   },
-    //   {
-    //     label: "BILL_REF_DUE_DATE",
-    //     value: "BILL_REF_DUE_DATE",
-    //   },
-    //   {
-    //     label: "VCH/BILL_NO",
-    //     value: "VCH_BILL_NO", // eg. 1/2526 , 2/2526
-    //   }
-    // );
-
-    exportExcel(data);
-  };
 
   const exportExcel = (data) => {
     const settings = {
@@ -1341,7 +1381,7 @@ export default function page() {
           </div>
           <div className="modal-action">
             <button className="btn bg-red-600">Cancel</button>
-            <button onClick={downloadSheet} className="btn bg-green-600">
+            <button onClick={createSheet} className="btn bg-green-600">
               Download
             </button>
           </div>
