@@ -370,12 +370,12 @@ export default function page() {
       partyName: formData?.partyName,
       mrp: Number(formData?.mrp),
       mDiscPercentage: formData.mDiscPercentage,
-      dynamicdisc: formData?.gstType === "Exclusive"? ExclusiveCalc(
+      dynamicdisc: formData?.gstType === "Exclusive"?  (ExclusiveCalc(
         formData?.mrp,
         formData?.amount,
         gstValue,
         formData?.quantity
-      ) : (((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100),
+      ))  : (((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100),
       gstPercentage: formData?.gstPercentage,
       purchaseType: formData?.purchaseType,
       invoiceNo: formData?.invoiceNo,
@@ -1074,7 +1074,7 @@ export default function page() {
         purchaseType: item?.purchaseType,
         invoiceNo: item?.invoiceNo,
         isIGST: item?.isIGST,
-        gstType: item?.gstType,
+        // gstType: item?.gstType,
         itemLocation: item?.itemLocation,
         amount: item?.amount,
         repetitionPrint:item?.repetition,
