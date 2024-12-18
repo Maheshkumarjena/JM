@@ -362,50 +362,64 @@ export default function page() {
       unitPriceAfterDiscount)/(formData?.mrp))*100
 
       console.log("This is the calculated Discount",calcDisc)
+// Helper function to ensure the value is a valid number
+function safeNumber(value, defaultValue = 0) {
+  const num = Number(value);
+  return isNaN(num) ? defaultValue : num;
+}
 
-    const tempContent = {
-      itemName: formData?.itemName,
-      quantity: Number(formData?.quantity),
-      unit: formData?.unit,
-      partyName: formData?.partyName,
-      mrp: Number(formData?.mrp),
-      mDiscPercentage: formData.mDiscPercentage,
-      dynamicdisc:(((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100),
-      gstPercentage: Number(formData?.gstPercentage),
-      purchaseType: formData?.purchaseType,
-      invoiceNo: formData?.invoiceNo,
-      isIGST: formData?.isIGST,
-      gstType: formData?.gstType,
-      itemLocation: formData?.itemLocation,
-      billSeries: bill,
-      amount: formData?.gstType === "Exclusive"? Number((formData?.mrp*formData?.quantity)*((100-(Number(formData?.gstPercentage))+1)/100))  : (formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField))  ,
-      billDate: dateToFormattedString(formData?.invoiceDate),
-      originDate: formData?.invoiceDate,
-      eligibility: eligibility,
-      itemPartNo: formData?.itemPartNoOrg,
-      disc: formData?.gstType === "Exclusive" ? (Number(formData?.gstPercentage))+1   : (formData?.purchaseType=="DNM" ? ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100 : formData?.mDiscPercentage),
-      discountStructure: formData?.discountStructure,
-      cgst: cgst,
-      sgst: cgst,
-      repetition: parseInt(formData?.repetitionPrint),
-      SAVE_discPercentage: formData?.disc,
-      SAVE_gstAmount: formData?.gstAmount,
-      SAVE_totalAmount: formData?.totalAmount,
-      SAVE_discAmount: formData?.discAmount,
-      SAVE_selectedItem: SelectedItem,
-      SAVE_actualTotalAmount: formData?.actualTotalAmount,
-      
-      // REMOTE_BILL_REF_NO: remoteLabel,
-      // REMOTE_BILL_REF_NO: remoteLabel,
-    };
-    console.log("prevArray====================>", tempContent);
+// Use this helper function to ensure all values are valid numbers
+const tempContent = {
+  itemName: formData?.itemName,
+  quantity: safeNumber(formData?.quantity),
+  unit: formData?.unit,
+  partyName: formData?.partyName,
+  mrp: safeNumber(formData?.mrp),
+  mDiscPercentage: formData?.mDiscPercentage,
+  dynamicdisc: ((safeNumber(formData?.mrp) * safeNumber(formData?.quantity) - safeNumber(formData?.amount)) / (safeNumber(formData?.mrp) * safeNumber(formData?.quantity))) * 100,
+  gstPercentage: safeNumber(formData?.gstPercentage),
+  purchaseType: formData?.purchaseType,
+  invoiceNo: formData?.invoiceNo,
+  isIGST: formData?.isIGST,
+  gstType: formData?.gstType,
+  itemLocation: formData?.itemLocation,
+  billSeries: bill,
+  
+  // Handle amount calculation
+  amount: formData?.gstType === "Exclusive"
+    ? safeNumber((formData?.mrp * formData?.quantity) * ((100 - (safeNumber(formData?.gstPercentage)) + 1) / 100))
+    : (formData?.purchaseType === "DNM"
+      ? safeNumber(formData?.amount)
+      : safeNumber(amountField)),
+  
+  billDate: dateToFormattedString(formData?.invoiceDate),
+  originDate: formData?.invoiceDate,
+  eligibility: eligibility,
+  itemPartNo: formData?.itemPartNoOrg,
+  
+  // Handle disc calculation
+  disc: formData?.gstType === "Exclusive"
+    ? safeNumber(formData?.gstPercentage) + 1
+    : (formData?.purchaseType === "DNM"
+      ? ((safeNumber(formData?.mrp) * safeNumber(formData?.quantity)) - safeNumber(formData?.amount)) / (safeNumber(formData?.mrp) * safeNumber(formData?.quantity)) * 100
+      : safeNumber(formData?.mDiscPercentage)),
+  
+  discountStructure: formData?.discountStructure,
+  cgst: cgst,
+  sgst: cgst,
+  repetition: parseInt(formData?.repetitionPrint),
+  SAVE_discPercentage: formData?.disc,
+  SAVE_gstAmount: formData?.gstAmount,
+  SAVE_totalAmount: formData?.totalAmount,
+  SAVE_discAmount: formData?.discAmount,
+  SAVE_selectedItem: SelectedItem,
+  SAVE_actualTotalAmount: formData?.actualTotalAmount,
 
-    console.log("MRP:", safeNumber(formData?.mrp));
-console.log("Quantity:", safeNumber(formData?.quantity));
-console.log("GST Percentage:", safeNumber(formData?.gstPercentage));
-console.log("Amount:", safeNumber(formData?.amount));
-console.log("Disc:", safeNumber(formData?.mDiscPercentage));
+  // REMOTE_BILL_REF_NO: remoteLabel,
+  // REMOTE_BILL_REF_NO: remoteLabel,
+};
 
+    
     // dynamic discount calculation
     handleFormChange("dynamicdisc", disc);
 
