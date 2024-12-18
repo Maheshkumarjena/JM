@@ -378,7 +378,12 @@ export default function page() {
       gstType: formData?.gstType,
       itemLocation: formData?.itemLocation,
       billSeries: bill,
-      amount: formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField)  ,
+      amount: formData?.gstType === "Exclusive"? Numbar((formData?.mrp*formData?.quantity)*((100-(ExclusiveCalc(
+        formData?.mrp,
+        formData?.amount,
+        gstValue,
+        formData?.quantity
+      )))/100))  : (formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField))  ,
       billDate: dateToFormattedString(formData?.invoiceDate),
       originDate: formData?.invoiceDate,
       eligibility: eligibility,
