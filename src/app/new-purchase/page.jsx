@@ -400,6 +400,12 @@ export default function page() {
     };
     console.log("prevArray====================>", tempContent);
 
+    console.log("MRP:", safeNumber(formData?.mrp));
+console.log("Quantity:", safeNumber(formData?.quantity));
+console.log("GST Percentage:", safeNumber(formData?.gstPercentage));
+console.log("Amount:", safeNumber(formData?.amount));
+console.log("Disc:", safeNumber(formData?.mDiscPercentage));
+
     // dynamic discount calculation
     handleFormChange("dynamicdisc", disc);
 
