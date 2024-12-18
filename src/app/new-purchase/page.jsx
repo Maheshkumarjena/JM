@@ -383,7 +383,12 @@ export default function page() {
       originDate: formData?.invoiceDate,
       eligibility: eligibility,
       itemPartNo: formData?.itemPartNoOrg,
-      disc: formData?.purchaseType=="DNM" ? ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100 : formData?.mDiscPercentage,
+      disc: formData?.gstType === "Exclusive" ? ExclusiveCalc(
+        formData?.mrp,
+        formData?.amount,
+        gstValue,
+        formData?.quantity
+      )   : (formData?.purchaseType=="DNM" ? ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100 : formData?.mDiscPercentage),
       discountStructure: formData?.discountStructure,
       cgst: cgst,
       sgst: cgst,
