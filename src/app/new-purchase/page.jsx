@@ -378,7 +378,7 @@ export default function page() {
       gstType: formData?.gstType,
       itemLocation: formData?.itemLocation,
       billSeries: bill,
-      amount: formData?.gstType === "Exclusive"? Numbar((formData?.mrp*formData?.quantity)*((100-(ExclusiveCalc(
+      amount: formData?.gstType === "Exclusive"? Number((formData?.mrp*formData?.quantity)*((100-(ExclusiveCalc(
         formData?.mrp,
         formData?.amount,
         gstValue,
