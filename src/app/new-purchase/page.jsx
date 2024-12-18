@@ -370,7 +370,12 @@ export default function page() {
       partyName: formData?.partyName,
       mrp: Number(formData?.mrp),
       mDiscPercentage: formData.mDiscPercentage,
-      dynamicdisc: ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100,
+      dynamicdisc: formData?.gstType === "Exclusive"? ExclusiveCalc(
+        formData?.mrp,
+        formData?.amount,
+        gstValue,
+        formData?.quantity
+      ) : (((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100),
       gstPercentage: formData?.gstPercentage,
       purchaseType: formData?.purchaseType,
       invoiceNo: formData?.invoiceNo,
