@@ -370,12 +370,7 @@ export default function page() {
       partyName: formData?.partyName,
       mrp: Number(formData?.mrp),
       mDiscPercentage: formData.mDiscPercentage,
-      dynamicdisc: formData?.gstType === "Exclusive"? ExclusiveCalc(
-        formData?.mrp,
-        formData?.amount,
-        gstValue,
-        formData?.quantity
-      ) : (((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100),
+      dynamicdisc:(((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100),
       gstPercentage: formData?.gstPercentage,
       purchaseType: formData?.purchaseType,
       invoiceNo: formData?.invoiceNo,
@@ -383,22 +378,12 @@ export default function page() {
       gstType: formData?.gstType,
       itemLocation: formData?.itemLocation,
       billSeries: bill,
-      amount: formData?.gstType === "Exclusive"? Number((formData?.mrp*formData?.quantity)*((100-(ExclusiveCalc(
-        formData?.mrp,
-        formData?.amount,
-        gstValue,
-        formData?.quantity
-      )))/100))  : (formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField))  ,
+      amount: formData?.gstType === "Exclusive"? Number((formData?.mrp*formData?.quantity)*((100-(formData?.gstPercentage)+1)/100))  : (formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField))  ,
       billDate: dateToFormattedString(formData?.invoiceDate),
       originDate: formData?.invoiceDate,
       eligibility: eligibility,
       itemPartNo: formData?.itemPartNoOrg,
-      disc: formData?.gstType === "Exclusive" ? ExclusiveCalc(
-        formData?.mrp,
-        formData?.amount,
-        gstValue,
-        formData?.quantity
-      )   : (formData?.purchaseType=="DNM" ? ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100 : formData?.mDiscPercentage),
+      disc: formData?.gstType === "Exclusive" ? Number(formData?.gstPercentage)+1   : (formData?.purchaseType=="DNM" ? ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100 : formData?.mDiscPercentage),
       discountStructure: formData?.discountStructure,
       cgst: cgst,
       sgst: cgst,
@@ -1061,6 +1046,7 @@ export default function page() {
       //   formData
       // );
 
+          
 
       const restoreFields = {
         itemName: item?.itemName,
