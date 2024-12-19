@@ -368,9 +368,14 @@ export default function page() {
       quantity: Number(formData?.quantity),
       unit: formData?.unit,
       partyName: formData?.partyName,
-      mrp: Number(formData?.mrp),
+      mrp: (formData?.mrp),
       mDiscPercentage: formData.mDiscPercentage,
-      dynamicdisc: ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100,
+      dynamicdisc: formData?.gstType === "Exclusive"?  (ExclusiveCalc(
+        formData?.mrp,
+        formData?.amount,
+        gstValue,
+        formData?.quantity
+      ))  : (((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100),
       gstPercentage: formData?.gstPercentage,
       purchaseType: formData?.purchaseType,
       invoiceNo: formData?.invoiceNo,
@@ -378,12 +383,22 @@ export default function page() {
       gstType: formData?.gstType,
       itemLocation: formData?.itemLocation,
       billSeries: bill,
-      amount: formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField)  ,
+      amount: formData?.gstType === "Exclusive"? Number((formData?.mrp*formData?.quantity)*((100-(ExclusiveCalc(
+        formData?.mrp,
+        formData?.amount,
+        gstValue,
+        formData?.quantity
+      )))/100))  : (formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField))  ,
       billDate: dateToFormattedString(formData?.invoiceDate),
       originDate: formData?.invoiceDate,
       eligibility: eligibility,
       itemPartNo: formData?.itemPartNoOrg,
-      disc: formData?.purchaseType=="DNM" ? ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100 : formData?.mDiscPercentage,
+      disc: formData?.gstType === "Exclusive" ? ExclusiveCalc(
+        formData?.mrp,
+        formData?.amount,
+        gstValue,
+        formData?.quantity
+      )   : (formData?.purchaseType=="DNM" ? ((formData?.mrp*formData?.quantity)-formData?.amount)/(formData?.mrp*formData?.quantity)*100 : formData?.mDiscPercentage),
       discountStructure: formData?.discountStructure,
       cgst: cgst,
       sgst: cgst,
@@ -1061,9 +1076,12 @@ export default function page() {
         isIGST: item?.isIGST,
         gstType: item?.gstType,
         itemLocation: item?.itemLocation,
-        amount: item?.amount,
+        amount:  formData?.gstType === 'Exclusive' ? ((item?.SAVE_selectedItem?.unitPriceAfterDiscount)/((100+(parseInt(item?.gstPercentage?.replace('%', ''), 10) || 0))/100))*item?.quantity 
+:        item?.amount,
         repetitionPrint:item?.repetition,
       };
+
+      console.log("selectedItem============>" , ((item?.SAVE_selectedItem?.unitPriceAfterDiscount)/((100+(parseInt(item?.gstPercentage?.replace('%', ''), 10) || 0))/100))*item?.quantity )
 
 
       // console.log("Form data before SETTING THE FORMDATA after restoringfield  " , formData)
@@ -1319,7 +1337,7 @@ export default function page() {
                       </td>
                       <td>{item?.quantity}</td>
                       <td>{item?.mrp}</td>
-                      <td>{item.disc.toFixed(2)}</td>
+                      <td>{item?.disc ? item.disc.toFixed(2) : ''}</td>
                       <td>{item?.amount}</td>
                     </tr>
                   );
@@ -1737,7 +1755,7 @@ export default function page() {
           onChange={(e) => {
             handleFormChange("amount", e.target.value);
           }}
-          value={formData?.amount || ""}
+          value={   formData?.amount || ""}
           className={[
             "input input-bordered  w-[295px] m-5",
             formData?.dynamicdisc !== "N/A"
