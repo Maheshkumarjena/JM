@@ -368,7 +368,7 @@ export default function page() {
       quantity: Number(formData?.quantity),
       unit: formData?.unit,
       partyName: formData?.partyName,
-      mrp: Number(formData?.mrp),
+      mrp: (formData?.mrp),
       mDiscPercentage: formData.mDiscPercentage,
       dynamicdisc: formData?.gstType === "Exclusive"?  (ExclusiveCalc(
         formData?.mrp,
@@ -1074,11 +1074,14 @@ export default function page() {
         purchaseType: item?.purchaseType,
         invoiceNo: item?.invoiceNo,
         isIGST: item?.isIGST,
-        // gstType: item?.gstType,
+        gstType: item?.gstType,
         itemLocation: item?.itemLocation,
-        amount: item?.amount,
+        amount:  formData?.gstType === 'Exclusive' ? ((item?.SAVE_selectedItem?.unitPriceAfterDiscount)/((100+(parseInt(item?.gstPercentage?.replace('%', ''), 10) || 0))/100))*item?.quantity 
+:        item?.amount,
         repetitionPrint:item?.repetition,
       };
+
+      console.log("selectedItem============>" , ((item?.SAVE_selectedItem?.unitPriceAfterDiscount)/((100+(parseInt(item?.gstPercentage?.replace('%', ''), 10) || 0))/100))*item?.quantity )
 
 
       // console.log("Form data before SETTING THE FORMDATA after restoringfield  " , formData)
@@ -1334,7 +1337,7 @@ export default function page() {
                       </td>
                       <td>{item?.quantity}</td>
                       <td>{item?.mrp}</td>
-                      <td>{item?.disc}</td>
+                      <td>{item?.disc ? item.disc.toFixed(2) : ''}</td>
                       <td>{item?.amount}</td>
                     </tr>
                   );
@@ -1752,7 +1755,7 @@ export default function page() {
           onChange={(e) => {
             handleFormChange("amount", e.target.value);
           }}
-          value={formData?.amount || ""}
+          value={   formData?.amount || ""}
           className={[
             "input input-bordered  w-[295px] m-5",
             formData?.dynamicdisc !== "N/A"
