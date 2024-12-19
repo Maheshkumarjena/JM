@@ -595,8 +595,12 @@ export default function page() {
     let totalBillAmount = 0;
     const content = excelContent.map((item) => {
       totalBillAmount += item?.amount || 0;
-      return { ...item };
+      return { 
+        ...item,  // Copy all properties of the current item
+        purchaseType: 'GST(INCL)' // Set purchaseType to 'GST(INCL)' for each item
+      };
     });
+    
     content[0].BILL_REF_AMOUNT = Math.round(totalBillAmount);
 
     const data = [
@@ -1341,8 +1345,9 @@ export default function page() {
                       </td>
                       <td>{item?.quantity}</td>
                       <td>{item?.mrp}</td>
-                      <td>{item?.disc ? item.disc.toFixed(2) : ''}</td>
-                      <td>{item?.amount.toFixed(2)}</td>
+                      <td>{item?.disc}</td>
+<td>{Math.round(item?.amount)}</td>
+
                     </tr>
                   );
                 })}
@@ -1350,7 +1355,8 @@ export default function page() {
             </table>
             <div className="ml-2 mb-2">
               Bill Amount:{" "}
-              <span className="font-extrabold">{Number(getTotalBillAmount().toFixed(2))}</span>
+              <span className="font-extrabold">{Math.round(Number(getTotalBillAmount()))}
+              </span>
             </div>
           </div>
           <div className="flex justify-center items-center mt-4 bg-indigo-950 rounded-lg p-3">
