@@ -53,6 +53,8 @@ export default function page() {
   const [DiscountStructure, setDiscountStructure] = useState([]);
   const [gotDbValue, setGotDbValue] = useState(false);
   const [BillSeriesRef, setBillSeriesRef] = useState(null);
+  const [exclusiveAmount,setExclusiveAmount]= useState(null);
+  console.log("Exclusive Amount ===================>",exclusiveAmount)
   // const [qrResult, setQrResult] = useState("");
   // const [barcodeScannedData, setBarcodeScannedData] = useState(null);
   const [formData, setFormData] = useState({
@@ -364,6 +366,7 @@ export default function page() {
       console.log("This is the calculated Discount",calcDisc)
 
     const tempContent = {
+      exclusiveInputAmount:exclusiveAmount,
       itemName: formData?.itemName,
       quantity: Number(formData?.quantity),
       unit: formData?.unit,
@@ -937,7 +940,7 @@ export default function page() {
       unitPrice: 0,
       repetitionPrint: 0,
     });
-
+    setExclusiveAmount(null);
     setExcelContent([]);
     setSelectedItem(null);
     localStorage.removeItem("NPUR_TEMP_CONTENT");
@@ -1076,7 +1079,8 @@ export default function page() {
         isIGST: item?.isIGST,
         gstType: item?.gstType,
         itemLocation: item?.itemLocation,
-        amount:  formData?.gstType === 'Exclusive' ? ((item?.SAVE_selectedItem?.unitPriceAfterDiscount)/((100+(parseInt(item?.gstPercentage?.replace('%', ''), 10) || 0))/100))*item?.quantity 
+        amount:  (formData?.gstType === 'Exclusive') ? ( item?.SAVE_selectedItem?.unitPriceAfterDiscount? (((item?.SAVE_selectedItem?.unitPriceAfterDiscount) / ((100 + (parseInt(item?.gstPercentage?.replace('%', ''), 10 ) || 0)) / 100)) * item?.quantity).toFixed(2) : (item?.exclusiveInputAmount)
+)
 :        item?.amount,
         repetitionPrint:item?.repetition,
       };
@@ -1338,7 +1342,7 @@ export default function page() {
                       <td>{item?.quantity}</td>
                       <td>{item?.mrp}</td>
                       <td>{item?.disc ? item.disc.toFixed(2) : ''}</td>
-                      <td>{item?.amount}</td>
+                      <td>{item?.amount.toFixed(2)}</td>
                     </tr>
                   );
                 })}
@@ -1346,7 +1350,7 @@ export default function page() {
             </table>
             <div className="ml-2 mb-2">
               Bill Amount:{" "}
-              <span className="font-extrabold">{Number(getTotalBillAmount())}</span>
+              <span className="font-extrabold">{Number(getTotalBillAmount().toFixed(2))}</span>
             </div>
           </div>
           <div className="flex justify-center items-center mt-4 bg-indigo-950 rounded-lg p-3">
@@ -1752,9 +1756,13 @@ export default function page() {
         />
 
         <input
-          onChange={(e) => {
-            handleFormChange("amount", e.target.value);
-          }}
+         onChange={(e) => {
+          handleFormChange("amount", e.target.value);
+          
+          if (!SelectedItem?.unitPriceAfterDiscount && formData?.gstType === "Exclusive") {
+            setExclusiveAmount(e.target.value);
+          }
+        }}        
           value={   formData?.amount || ""}
           className={[
             "input input-bordered  w-[295px] m-5",
