@@ -735,56 +735,63 @@ export default function page() {
   // const REMOTE_BILL_REF_NO = content[0].REMOTE_BILL_REF_NO; // the dynamic bill ref no eg. APP/16/2425
   // content[0].VCH_BILL_NO =
   //   REMOTE_BILL_REF_NO.split("/")[1] + "/" + REMOTE_BILL_REF_NO.split("/")[2];
-  const totalBillAmount = Number(getTotalBillAmount());
-
+  
   if (formData?.bankPayment > 0) {
     content[0].SETTLEMENT_NARR2 = "Bank";
   }
   
-
+  
+  
+  console.log("XLSX Content", content);
+  
+  const totalBillAmount = Number(getTotalBillAmount());
+  
   console.log(
     "Total Bill Amount, Cash Payment, Bank Payment, Party Name",
     totalBillAmount
     
   );
+  // content[0].BILL_REF_AMOUNT = Math.round(totalBillAmount);
 
-  console.log("XLSX Content", content);
-  // content[0].BILL_REF_AMOUNT = Math.round(BILL_REF_AMOUNT);
-
-    let data = [
-      {
-        sheet: "Sheet1",
-        columns: [
-          { label: "BILL SERIES", value: "billSeries" },
-          { label: "BILL DATE", value: "billDate" },
-          { label: "Purc Type", value: "purchaseType" },
-          { label: "PARTY NAME", value: "partyName" },
-          { label: "ITC ELIGIBILITY", value: "eligibility" },
-          { label: "NARRATION", value: "invoiceNo" },
-          { label: "ITEM NAME", value: "itemName" },
-          { label: "QTY", value: "quantity", format: "0" },
-          { label: "Unit", value: "unit" },
-          { label: "PRICE", value: "mrp", format: "0.00" },
-          { label: "DISC%", value: "disc", format: "0.00" },
-          { label: "Amount", value: "amount", format: "0.00" },
-          { label: "CGST", value: "cgst", format: "0" },
-          { label: "SGST", value: "sgst", format: "0" },
-
-          { label: "BILL_REF", value: "invoiceNo" },
-          {
-            label: "BILL_REF_AMOUNT", // * total amount
-            value: "totalBillAmount",
-            format: "0",
-          },
-          {
-            label: "BILL_REF_DUE_DATE", // * credit days with current days
-            value: "bill_ref_due_date",
-          },
-        ],
-        content,
-      },
-    ];
-
+  let data = [
+    {
+      sheet: "Sheet1",
+      columns: [
+        { label: "BILL SERIES", value: "billSeries" },
+        { label: "BILL DATE", value: "billDate" },
+        { label: "Purc Type", value: "purchaseType" },
+        { label: "PARTY NAME", value: "partyName" },
+        { label: "ITC ELIGIBILITY", value: "eligibility" },
+        { label: "NARRATION", value: "invoiceNo" },
+        { label: "ITEM NAME", value: "itemName" },
+        { label: "QTY", value: "quantity", format: "0" },
+        { label: "Unit", value: "unit" },
+        { label: "PRICE", value: "mrp", format: "0.00" },
+        { label: "DISC%", value: "disc", format: "0.00" },
+        { label: "Amount", value: "amount", format: "0.00" },
+        { label: "CGST", value: "cgst", format: "0" },
+        { label: "SGST", value: "sgst", format: "0" },
+        { label: "BILL_REF", value: "invoiceNo" },
+        {
+          label: "BILL_REF_AMOUNT", // * total amount
+          value: "totalBillAmount",
+          format: "0",
+        },
+        {
+          label: "BILL_REF_DUE_DATE", // * credit days with current days
+          value: "bill_ref_due_date",
+        },
+      ],
+      content: content.map((item, index) => ({
+        ...item,
+        purchaseType: "GST(INCL)", // Set default static value if undefined
+        // Insert the totalBillAmount only in the first row (index === 0)
+        totalBillAmount: index === 0 ? totalBillAmount : "", // For first row only
+      })),
+    },
+  ];
+  
+  
   // * upload the document to history
 
   const sendPurchaseHistory = async (
@@ -822,9 +829,9 @@ export default function page() {
       const payload = {
         sheetdata: JSON.stringify(data),
         barcodedata: JSON.stringify(barcodeSheet),
-        items: data[0].content.length,
-        invoice: formData.invoiceDate,
-        partyname: formData.partyName,
+        items: sheet[0].content.length,
+        invoice: invoice,
+        partyname: partyname,
         desc: "purchase",
         totalAmount,
       };
