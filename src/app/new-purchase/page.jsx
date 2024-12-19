@@ -740,53 +740,50 @@ export default function page() {
   if (formData?.bankPayment > 0) {
     content[0].SETTLEMENT_NARR2 = "Bank";
   }
-
-  // check if we need to generate the columns T, U and V (Bill Ref No, bill ref Amount,bill ref  Due Date)
-  //Below fields will get updated when Series is APP, Party Name is other than Cash and Amount – (SETTLEMENT_AMT1 + SETTLEMENT_AMT2) > 0. If the value is zero then these fields will be blank.
+  
 
   console.log(
     "Total Bill Amount, Cash Payment, Bank Payment, Party Name",
     totalBillAmount
-    // content[0].settlement_amount_1_cashPayment,
-    // content[0].settlement_amount_2_bankPayment,
-    // content[0].partyName
+    
   );
 
-  // if (
-  //   content[0].vchSeries === "APP" &&
-  //   content[0].partyName !== "Cash" &&
-  //   // formData?.partyName !== "PHONE PE" &&
-  //   totalBillAmount -
-  //     (Number(content[0].settlement_amount_1_cashPayment || 0) +
-  //       Number(content[0].settlement_amount_2_bankPayment || 0)) >
-  //     0
-  // ) {
-  //   console.log("Bill Ref No, bill ref Amount,bill ref  Due Date");
-  //   content[0].BILL_REF_NO = REMOTE_BILL_REF_NO;
-  //   content[0].BILL_REF_AMOUNT = totalBillAmount;
-  //   content[0].BILL_REF_DUE_DATE = addDaysToDate(content[0].billDate, 5);
-  // }
-
   console.log("XLSX Content", content);
+  // content[0].BILL_REF_AMOUNT = Math.round(BILL_REF_AMOUNT);
 
-  let data = [
-    {
-      sheet: "Sheet1",
-      columns: [
-        { label: "vch_series", value: "vchSeries" },
-        { label: "bill date", value: "billDate" },
-        { label: "party name", value: "partyName" },
-        { label: "narration", value: "narration" },
-        { label: "item name", value: "itemName" },
-        { label: "qty", value: "quantity", format: "0.00" },
-        { label: "unit", value: "unit" },
-        { label: "price", value: "mrp", format: "0.00" },
-        { label: "disc", value: "disc", format: "0.00" },
-        { label: "Amount", value: "amount", format: "0.00" },
-      ],
-      content,
-    },
-  ];
+    let data = [
+      {
+        sheet: "Sheet1",
+        columns: [
+          { label: "BILL SERIES", value: "billSeries" },
+          { label: "BILL DATE", value: "billDate" },
+          { label: "Purc Type", value: "purchaseType" },
+          { label: "PARTY NAME", value: "partyName" },
+          { label: "ITC ELIGIBILITY", value: "eligibility" },
+          { label: "NARRATION", value: "invoiceNo" },
+          { label: "ITEM NAME", value: "itemName" },
+          { label: "QTY", value: "quantity", format: "0" },
+          { label: "Unit", value: "unit" },
+          { label: "PRICE", value: "mrp", format: "0.00" },
+          { label: "DISC%", value: "disc", format: "0.00" },
+          { label: "Amount", value: "amount", format: "0.00" },
+          { label: "CGST", value: "cgst", format: "0" },
+          { label: "SGST", value: "sgst", format: "0" },
+
+          { label: "BILL_REF", value: "invoiceNo" },
+          {
+            label: "BILL_REF_AMOUNT", // * total amount
+            value: "totalBillAmount",
+            format: "0",
+          },
+          {
+            label: "BILL_REF_DUE_DATE", // * credit days with current days
+            value: "bill_ref_due_date",
+          },
+        ],
+        content,
+      },
+    ];
 
   // * upload the document to history
 
