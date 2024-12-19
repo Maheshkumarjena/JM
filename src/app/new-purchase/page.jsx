@@ -371,7 +371,7 @@ export default function page() {
       quantity: Number(formData?.quantity),
       unit: formData?.unit,
       partyName: formData?.partyName,
-      mrp: (formData?.mrp),
+      mrp: Math.round(formData?.mrp),
       mDiscPercentage: formData.mDiscPercentage,
       dynamicdisc: formData?.gstType === "Exclusive"?  (ExclusiveCalc(
         formData?.mrp,
@@ -386,12 +386,12 @@ export default function page() {
       gstType: formData?.gstType,
       itemLocation: formData?.itemLocation,
       billSeries: bill,
-      amount: formData?.gstType === "Exclusive"? Number((formData?.mrp*formData?.quantity)*((100-(ExclusiveCalc(
+      amount: Math.round(formData?.gstType === "Exclusive"? Number((formData?.mrp*formData?.quantity)*((100-(ExclusiveCalc(
         formData?.mrp,
         formData?.amount,
         gstValue,
         formData?.quantity
-      )))/100))  : (formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField))  ,
+      )))/100))  : (formData?.purchaseType=="DNM" ? Number(formData?.amount) : Number(amountField)))  ,
       billDate: dateToFormattedString(formData?.invoiceDate),
       originDate: formData?.invoiceDate,
       eligibility: eligibility,
@@ -1345,8 +1345,8 @@ export default function page() {
                       </td>
                       <td>{item?.quantity}</td>
                       <td>{item?.mrp}</td>
-                      <td>{item?.disc}</td>
-<td>{Math.round(item?.amount)}</td>
+                      <td>{item?.disc?.toFixed(2)}</td>
+                      <td>{Math.round(Number(item?.amount))}</td>
 
                     </tr>
                   );
