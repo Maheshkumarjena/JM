@@ -1093,7 +1093,7 @@ export default function page() {
         repetitionPrint:item?.repetition,
       };
 
-      console.log("selectedItem============>" , ((item?.SAVE_selectedItem?.unitPriceAfterDiscount)/((100+(parseInt(item?.gstPercentage?.replace('%', ''), 10) || 0))/100))*item?.quantity )
+      // console.log("selectedItem============>" , ((item?.SAVE_selectedItem?.unitPriceAfterDiscount)/((100+(parseInt(item?.gstPercentage?.replace('%', ''), 10) || 0))/100))*item?.quantity )
 
 
       // console.log("Form data before SETTING THE FORMDATA after restoringfield  " , formData)
